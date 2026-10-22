@@ -45,6 +45,8 @@ textarea{resize:vertical}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
 .tabs button{border:0;background:none;font:inherit;padding:8px 12px;color:var(--ink2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
 .tabs button[aria-current="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.task .open{cursor:pointer}
+.task .open:hover .req{text-decoration:underline;text-decoration-color:var(--line)}
 .task{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--card)}
 .task.due{border-color:var(--wait);box-shadow:0 0 0 2px var(--wait-bg)}
 .th{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -168,10 +170,12 @@ function sendHTML(){
 }
 function taskCard(t,isDue){
   var st=ST[t.status||"pending"]||ST.pending,f=fu[t.id];
-  var h='<div class="task'+(isDue?' due':'')+'"><div class="th"><span class="pill '+st.c+'">'+st.l+'</span><span class="pill p-info">'+esc(KINDS[t.kind]||"")+'</span>'+
+  var link=PERMITO_URL+"#"+(t.order_no?"open="+encodeURIComponent(t.order_no)+"&":"")+"task="+encodeURIComponent(t.id);
+  var h='<div class="task'+(isDue?' due':'')+'"><div class="open" data-href="'+esc(link)+'" title="פתח ב-Permito"><div class="th"><span class="pill '+st.c+'">'+st.l+'</span><span class="pill p-info">'+esc(KINDS[t.kind]||"")+'</span>'+
     (t.project_name?'<b>'+esc(t.project_name)+'</b>':'')+'<span class="grow"></span><span class="muted">נשלח '+esc(fmt(t.created_at))+'</span></div>';
   h+='<div class="req">'+esc(t.request)+'</div>';
   if(t.answer)h+='<div class="ans"><em>עדכון מאנה'+(t.done_at?' · '+esc(fmt(t.done_at)):'')+'</em>'+esc(t.answer)+'</div>';
+  h+='<div class="muted" style="margin-top:6px">פתח ב-Permito ↗</div></div>';
   if(t.status!=="done"){
     h+='<div class="fu"><span class="muted">פולואפ:</span><input type="datetime-local" data-fu="'+t.id+'" value="'+(f&&!f.done?toLocalInput(f.at):"")+'">';
     if(f&&!f.done)h+='<a class="btn sm" target="_blank" rel="noopener" href="'+esc(gcalLink(t,f.at))+'">הוסף ליומן</a><button class="btn sm" data-fuoff="'+t.id+'">'+(isDue?"טופל, הסר תזכורת":"בטל תזכורת")+'</button>';
@@ -198,6 +202,7 @@ function bind(){
   document.querySelectorAll("[data-fu]").forEach(function(i){i.onchange=function(){var id=i.dataset.fu;if(!i.value){delete fu[id];}else{fu[id]={at:new Date(i.value).toISOString()};delete notified[id];}saveFu().then(render);toast(i.value?"התזכורת עודכנה":"התזכורת בוטלה");};});
   document.querySelectorAll("[data-fuoff]").forEach(function(b){b.onclick=function(){delete fu[b.dataset.fuoff];saveFu().then(render);};});
   document.querySelectorAll("[data-snooze]").forEach(function(b){b.onclick=function(){var id=b.dataset.snooze,x=new Date();x.setDate(x.getDate()+1);x.setHours(9,0,0,0);fu[id]={at:x.toISOString()};delete notified[id];saveFu().then(render);toast("נדחה למחר ב-09:00");};});
+  document.querySelectorAll("[data-href]").forEach(function(d){d.onclick=function(){window.open(d.dataset.href,"permito");};});
   document.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){
     if(!b.dataset.confirm){b.dataset.confirm="1";b.textContent="לחץ שוב לביטול";return;}
     sb.from("tasks").delete().eq("id",b.dataset.del).then(function(r){if(r.error){toast("שגיאה: "+r.error.message);return;}delete fu[b.dataset.del];saveFu();loadTasks().then(render);toast("המשימה בוטלה");});};});
