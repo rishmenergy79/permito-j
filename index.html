@@ -117,14 +117,17 @@ function afterLogin(){
 }
 
 /* ---------- data ---------- */
-function loadProjects(){return sb.from("projects").select("order_no,name,pv_order,mstatus,state,ptype").then(function(r){projects=r.data||[];});}
+function loadProjects(){var all=[],size=1000;
+  function page(from){return sb.from("projects").select("order_no,name,pv_order,increase_no,mstatus,state,ptype").order("order_no",{ascending:true}).range(from,from+size-1).then(function(r){
+    if(r.error){toast("שגיאה בטעינת הזמנות: "+r.error.message);return;}all=all.concat(r.data||[]);if((r.data||[]).length===size)return page(from+size);projects=all;});}
+  return page(0);}
 function loadTasks(){return sb.from("tasks").select("*").in("kind",["nadav","nadav_update"]).order("created_at",{ascending:false}).then(function(r){if(r.error)toast("שגיאה בטעינה: "+r.error.message);tasks=r.data||[];});}
 function fuKey(){return "pj_followups_"+me.id;}
 function loadFu(){return sb.from("meta").select("value").eq("key",fuKey()).maybeSingle().then(function(r){fu=(r.data&&r.data.value)||{};}).catch(function(){fu={};});}
 function saveFu(){return sb.from("meta").upsert({key:fuKey(),value:fu}).then(function(r){if(r.error)toast("שמירת התזכורת נכשלה: "+r.error.message);});}
 function subscribe(){sb.channel("pj-live").on("postgres_changes",{event:"*",schema:"permito",table:"tasks"},function(){loadTasks().then(render);}).subscribe();}
 function findP(q){q=String(q||"").trim();if(!q)return null;var m=q.match(/^(\S+)\s·/);var key=m?m[1]:q;
-  for(var i=0;i<projects.length;i++){var p=projects[i];if(p.order_no===key||(p.pv_order&&String(p.pv_order).indexOf(key)>=0&&key.length>=6))return p;}return null;}
+  for(var i=0;i<projects.length;i++){var p=projects[i];if(p.order_no===key||(key.length>=6&&((p.pv_order&&String(p.pv_order).indexOf(key)>=0)||(p.increase_no&&String(p.increase_no).indexOf(key)>=0))))return p;}return null;}
 
 /* ---------- reminders ---------- */
 function dueList(){var now=Date.now();return tasks.filter(function(t){var f=fu[t.id];return f&&!f.done&&t.status!=="done"&&new Date(f.at).getTime()<=now;});}
