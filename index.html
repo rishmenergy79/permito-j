@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PERMITO J</title>
+<meta name="theme-color" content="#1F5C3A">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#F5F4EF;--card:#FFFFFF;--ink:#1C231C;--ink2:#4D5650;--ink3:#8A918B;--line:#E3E1D9;--accent:#1F5C3A;--accent2:#2E7D4F;--soft:#E7F1EA;
+--wait:#B26A00;--wait-bg:#FFF2DC;--live:#1D6FB8;--live-bg:#E2EEFA;--done:#1E7A45;--done-bg:#E0F3E7;--bad:#A33228;--bad-bg:#FBE5E2;--shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05)}
+@media (prefers-color-scheme: dark){:root{--bg:#121512;--card:#1B201C;--ink:#E9ECE8;--ink2:#B5BDB6;--ink3:#7D857E;--line:#2C332D;--accent:#5DBB84;--accent2:#7BD09E;--soft:#1F2E24;
+--wait:#F0B456;--wait-bg:#3A2D14;--live:#7DB5EA;--live-bg:#16283A;--done:#72CF97;--done-bg:#17301F;--bad:#F08A80;--bad-bg:#3A1C19;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:16px 16px 60px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:22px;letter-spacing:.02em}
+.brand b{color:var(--accent)}
+.sub{color:var(--ink3);font-size:13px}
+.grow{flex:1}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;font:inherit;font-weight:500;cursor:pointer}
+.btn:hover{border-color:var(--ink3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:4px 10px;font-size:13px;border-radius:8px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+h2{font-size:16px;margin:0 0 12px}
+label{display:block;font-size:12.5px;color:var(--ink2);margin-bottom:4px;font-weight:500}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+textarea{resize:vertical}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.wide{grid-column:1/-1}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--ink2);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.chk input{width:auto}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+.tabs button{border:0;background:none;font:inherit;padding:8px 12px;color:var(--ink2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-current="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.task{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--card)}
+.task.due{border-color:var(--wait);box-shadow:0 0 0 2px var(--wait-bg)}
+.th{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:500}
+.p-wait{background:var(--wait-bg);color:var(--wait)}.p-live{background:var(--live-bg);color:var(--live)}.p-done{background:var(--done-bg);color:var(--done)}.p-info{background:var(--soft);color:var(--accent)}
+.req{margin:8px 0 0;white-space:pre-wrap}
+.ans{margin-top:8px;padding:8px 10px;border-radius:9px;background:var(--done-bg);color:var(--ink);white-space:pre-wrap;font-size:14px}
+.ans em{display:block;font-style:normal;font-size:12px;color:var(--done);font-weight:700}
+.muted{color:var(--ink3);font-size:12.5px}
+.fu{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.fu input{width:auto;min-width:200px}
+.alert{background:var(--wait-bg);color:var(--wait);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-weight:500}
+.err{background:var(--bad-bg);color:var(--bad);border-radius:9px;padding:8px 10px;margin-top:8px;font-size:14px}
+.ok{background:var(--done-bg);color:var(--done);border-radius:9px;padding:8px 10px;margin-top:8px;font-size:14px}
+.center{min-height:80vh;display:grid;place-items:center}
+.login{width:100%;max-width:360px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:10px;font-size:14px;z-index:99;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.empty{text-align:center;color:var(--ink3);padding:24px}
+.stat{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="root" class="wrap"></div>
+<div id="toast" class="toast"></div>
+<script>
+var SUPABASE_URL="https://gpbzqmcexkikozevnvob.supabase.co";
+var SUPABASE_KEY="sb_publishable_Al-p4Nlsa28WBgtInLiXQA_PCT5ArPT";
+var PERMITO_URL="https://rishmenergy79.github.io/permito/";
+var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:"permito"},auth:{persistSession:true,autoRefreshToken:true,storageKey:"permito-j-auth"}});
+var me={id:null,email:""},projects=[],tasks=[],fu={},view="send",mode="task",listTab="open",notified={};
+var KINDS={nadav:"משימה",nadav_update:"בקשת עדכון"};
+var ST={pending:{l:"נשלח, ממתין לאישור",c:"p-wait"},in_progress:{l:"אנה קיבלה",c:"p-live"},done:{l:"בוצע",c:"p-done"}};
+function el(i){return document.getElementById(i);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function toast(m){var t=el("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("on");},2600);}
+function fmt(d){if(!d)return"";var x=new Date(d);if(isNaN(x))return"";return x.toLocaleString("he-IL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});}
+function pad(n){return("0"+n).slice(-2);}
+function toLocalInput(d){var x=new Date(d);return x.getFullYear()+"-"+pad(x.getMonth()+1)+"-"+pad(x.getDate())+"T"+pad(x.getHours())+":"+pad(x.getMinutes());}
+function defaultFu(){var x=new Date();x.setDate(x.getDate()+(x.getHours()>=15?1:0));x.setHours(x.getHours()>=15?9:x.getHours()+3,0,0,0);if(x.getDay()===5)x.setDate(x.getDate()+2);if(x.getDay()===6)x.setDate(x.getDate()+1);return toLocalInput(x);}
+
+/* ---------- auth ---------- */
+function boot(){
+  sb.auth.getSession().then(function(r){if(r.data.session)afterLogin();else renderLogin();});
+  sb.auth.onAuthStateChange(function(ev){if(ev==="SIGNED_OUT")renderLogin();});
+}
+function renderLogin(msg){
+  el("root").innerHTML='<div class="center"><div class="card login"><div class="brand">PERMITO <b>J</b></div><div class="sub" style="margin-bottom:14px">פאנל משימות לאנה · התחברות עם המשתמש של Permito</div>'+
+   '<label>אימייל</label><input id="em" type="email" autocomplete="username"><div style="height:10px"></div><label>סיסמה</label><input id="pw" type="password" autocomplete="current-password">'+
+   '<div id="lerr">'+(msg?'<div class="err">'+esc(msg)+'</div>':'')+'</div><div style="margin-top:14px"><button class="btn primary" id="go" style="width:100%">התחברות</button></div></div></div>';
+  el("go").onclick=doLogin;el("pw").onkeydown=function(e){if(e.key==="Enter")doLogin();};
+}
+function doLogin(){
+  var e=(el("em").value||"").trim(),p=el("pw").value||"";if(!e||!p){el("lerr").innerHTML='<div class="err">מלא אימייל וסיסמה</div>';return;}
+  el("go").textContent="מתחבר…";
+  sb.auth.signInWithPassword({email:e,password:p}).then(function(r){if(r.error){el("go").textContent="התחברות";el("lerr").innerHTML='<div class="err">'+(/Invalid login/.test(r.error.message)?"אימייל או סיסמה שגויים":esc(r.error.message))+'</div>';return;}afterLogin();});
+}
+function afterLogin(){
+  el("root").innerHTML='<div class="center muted">טוען…</div>';
+  sb.auth.getUser().then(function(r){
+    var u=r.data.user;if(!u){renderLogin();return;}me.id=u.id;me.email=u.email;
+    return sb.from("profiles").select("role,active").eq("id",u.id).maybeSingle().then(function(p){
+      var role=p.data&&p.data.active!==false?p.data.role:"pending";
+      if(role!=="editor"&&role!=="master"){el("root").innerHTML='<div class="center"><div class="card login">למשתמש הזה אין הרשאת עריכה ב-Permito, ולכן אי אפשר לשלוח ממנו משימות.<div style="margin-top:12px"><button class="btn" onclick="sb.auth.signOut()">יציאה</button></div></div></div>';return;}
+      return Promise.all([loadProjects(),loadTasks(),loadFu()]).then(function(){render();subscribe();startTicker();});
+    });
+  }).catch(function(e){renderLogin(String(e&&e.message||e));});
+}
+
+/* ---------- data ---------- */
+function loadProjects(){return sb.from("projects").select("order_no,name,pv_order,mstatus,state,ptype").then(function(r){projects=r.data||[];});}
+function loadTasks(){return sb.from("tasks").select("*").in("kind",["nadav","nadav_update"]).order("created_at",{ascending:false}).then(function(r){if(r.error)toast("שגיאה בטעינה: "+r.error.message);tasks=r.data||[];});}
+function fuKey(){return "pj_followups_"+me.id;}
+function loadFu(){return sb.from("meta").select("value").eq("key",fuKey()).maybeSingle().then(function(r){fu=(r.data&&r.data.value)||{};}).catch(function(){fu={};});}
+function saveFu(){return sb.from("meta").upsert({key:fuKey(),value:fu}).then(function(r){if(r.error)toast("שמירת התזכורת נכשלה: "+r.error.message);});}
+function subscribe(){sb.channel("pj-live").on("postgres_changes",{event:"*",schema:"permito",table:"tasks"},function(){loadTasks().then(render);}).subscribe();}
+function findP(q){q=String(q||"").trim();if(!q)return null;var m=q.match(/^(\S+)\s·/);var key=m?m[1]:q;
+  for(var i=0;i<projects.length;i++){var p=projects[i];if(p.order_no===key||(p.pv_order&&String(p.pv_order).indexOf(key)>=0&&key.length>=6))return p;}return null;}
+
+/* ---------- reminders ---------- */
+function dueList(){var now=Date.now();return tasks.filter(function(t){var f=fu[t.id];return f&&!f.done&&t.status!=="done"&&new Date(f.at).getTime()<=now;});}
+function startTicker(){
+  if("Notification" in window&&Notification.permission==="default")try{Notification.requestPermission();}catch(e){}
+  setInterval(function(){
+    var d=dueList();
+    d.forEach(function(t){if(notified[t.id])return;notified[t.id]=1;
+      if("Notification" in window&&Notification.permission==="granted"){try{var n=new Notification("פולואפ מול אנה",{body:(t.project_name?t.project_name+" — ":"")+String(t.request).slice(0,120),tag:"pj-"+t.id});n.onclick=function(){window.focus();};}catch(e){}}
+    });
+    if(d.length)render();
+  },60000);
+}
+function gcalLink(t,at){
+  var s=new Date(at),e=new Date(s.getTime()+15*60000);
+  function z(x){return x.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");}
+  var title="פולואפ מול אנה: "+(t.project_name||"משימה");
+  var det=String(t.request||"")+"\n\nPERMITO J: "+location.href;
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(title)+"&dates="+z(s)+"/"+z(e)+"&details="+encodeURIComponent(det);
+}
+
+/* ---------- UI ---------- */
+function render(){
+  var due=dueList(),open=tasks.filter(function(t){return t.status!=="done";}),done=tasks.filter(function(t){return t.status==="done";});
+  var h='<header><div><div class="brand">PERMITO <b>J</b></div><div class="sub">משימות ובקשות עדכון לאנה · '+esc(me.email)+'</div></div><span class="grow"></span>'+
+    '<a class="btn sm ghost" href="'+PERMITO_URL+'" target="_blank" rel="noopener">פתח את Permito</a><button class="btn sm ghost" id="out">יציאה</button></header>';
+  if(due.length)h+='<div class="alert">⏰ '+due.length+' '+(due.length===1?'פולואפ הגיע לזמנו':'פולואפים הגיעו לזמנם')+' — מסומנים למטה.</div>';
+  h+='<div class="tabs"><button data-v="send" aria-current="'+(view==="send")+'">שליחה</button><button data-v="list" aria-current="'+(view==="list")+'">מעקב ('+open.length+' פתוחות)</button></div>';
+  if(view==="send")h+=sendHTML();else h+=listHTML(open,done,due);
+  el("root").innerHTML=h;bind();
+}
+function sendHTML(){
+  var dl='<datalist id="plist">'+projects.filter(function(p){return p.state!=="cancelled";}).map(function(p){return '<option value="'+esc(p.order_no+" · "+(p.name||"")+(p.pv_order?" · PV "+p.pv_order:""))+'">';}).join("")+'</datalist>';
+  var h='<div class="card"><div class="seg"><button data-m="task" aria-pressed="'+(mode==="task")+'">משימה על הזמנה</button><button data-m="update" aria-pressed="'+(mode==="update")+'">בקשת עדכון על הזמנה</button><button data-m="general" aria-pressed="'+(mode==="general")+'">משימה ידנית כללית</button></div><div class="grid">';
+  if(mode!=="general")h+='<div class="wide"><label>הזמנה (חיפוש לפי שם, מספר הזמנה או מספר PV)</label><input id="proj" list="plist" placeholder="התחל להקליד…" autocomplete="off">'+dl+'<div id="pinfo" class="muted" style="margin-top:4px"></div></div>';
+  else h+='<div class="wide"><label>נושא</label><input id="subj" placeholder="למשל: ריכוז אגרות לוועדת שקמים"></div>';
+  h+='<div class="wide"><label>'+(mode==="update"?"על מה לעדכן (רשות)":"מה לבצע")+'</label><textarea id="req" rows="3" placeholder="'+(mode==="update"?"ברירת מחדל: נא לעדכן מה הסטטוס בהזמנה ומה הצעד הבא":"נסח את המשימה")+'"></textarea></div>';
+  h+='<div><label>תאריך יעד (רשות)</label><input id="due" type="date"></div>';
+  h+='<div><label>תזכורת פולואפ אצלי</label><input id="fu" type="datetime-local" value="'+defaultFu()+'"></div>';
+  h+='<div style="display:flex;align-items:end"><label class="chk"><input type="checkbox" id="urg"> דחוף</label></div>';
+  h+='</div><div id="serr"></div><div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="send">שליחה לאנה</button></div></div>';
+  return h;
+}
+function taskCard(t,isDue){
+  var st=ST[t.status||"pending"]||ST.pending,f=fu[t.id];
+  var h='<div class="task'+(isDue?' due':'')+'"><div class="th"><span class="pill '+st.c+'">'+st.l+'</span><span class="pill p-info">'+esc(KINDS[t.kind]||"")+'</span>'+
+    (t.project_name?'<b>'+esc(t.project_name)+'</b>':'')+'<span class="grow"></span><span class="muted">נשלח '+esc(fmt(t.created_at))+'</span></div>';
+  h+='<div class="req">'+esc(t.request)+'</div>';
+  if(t.answer)h+='<div class="ans"><em>עדכון מאנה'+(t.done_at?' · '+esc(fmt(t.done_at)):'')+'</em>'+esc(t.answer)+'</div>';
+  if(t.status!=="done"){
+    h+='<div class="fu"><span class="muted">פולואפ:</span><input type="datetime-local" data-fu="'+t.id+'" value="'+(f&&!f.done?toLocalInput(f.at):"")+'">';
+    if(f&&!f.done)h+='<a class="btn sm" target="_blank" rel="noopener" href="'+esc(gcalLink(t,f.at))+'">הוסף ליומן</a><button class="btn sm" data-fuoff="'+t.id+'">'+(isDue?"טופל, הסר תזכורת":"בטל תזכורת")+'</button>';
+    if(isDue)h+='<button class="btn sm" data-snooze="'+t.id+'">דחה ביום</button>';
+    h+='<span class="grow"></span><button class="btn sm ghost danger" data-del="'+t.id+'">ביטול המשימה</button></div>';
+  }
+  return h+'</div>';
+}
+function listHTML(open,done,due){
+  var dueIds={};due.forEach(function(t){dueIds[t.id]=1;});
+  var h='<div class="seg"><button data-lt="open" aria-pressed="'+(listTab==="open")+'">פתוחות ('+open.length+')</button><button data-lt="done" aria-pressed="'+(listTab==="done")+'">בוצעו ('+done.length+')</button></div>';
+  var arr=listTab==="open"?open.slice().sort(function(a,b){var da=dueIds[a.id]?0:1,db=dueIds[b.id]?0:1;if(da!==db)return da-db;var fa=fu[a.id]&&!fu[a.id].done?new Date(fu[a.id].at).getTime():9e15,fb=fu[b.id]&&!fu[b.id].done?new Date(fu[b.id].at).getTime():9e15;return fa-fb;}):done;
+  if(!arr.length)return h+'<div class="empty">'+(listTab==="open"?"אין משימות פתוחות":"עוד אין משימות שבוצעו")+'</div>';
+  arr.forEach(function(t){h+=taskCard(t,!!dueIds[t.id]);});
+  return h;
+}
+function bind(){
+  el("out").onclick=function(){sb.auth.signOut();};
+  document.querySelectorAll("[data-v]").forEach(function(b){b.onclick=function(){view=b.dataset.v;render();};});
+  document.querySelectorAll("[data-m]").forEach(function(b){b.onclick=function(){mode=b.dataset.m;render();};});
+  document.querySelectorAll("[data-lt]").forEach(function(b){b.onclick=function(){listTab=b.dataset.lt;render();};});
+  var pj=el("proj");if(pj)pj.oninput=function(){var p=findP(pj.value);el("pinfo").textContent=p?(p.name+" · "+(p.ptype||"")+" · "+(p.mstatus||"")):"";};
+  var s=el("send");if(s)s.onclick=doSend;
+  document.querySelectorAll("[data-fu]").forEach(function(i){i.onchange=function(){var id=i.dataset.fu;if(!i.value){delete fu[id];}else{fu[id]={at:new Date(i.value).toISOString()};delete notified[id];}saveFu().then(render);toast(i.value?"התזכורת עודכנה":"התזכורת בוטלה");};});
+  document.querySelectorAll("[data-fuoff]").forEach(function(b){b.onclick=function(){delete fu[b.dataset.fuoff];saveFu().then(render);};});
+  document.querySelectorAll("[data-snooze]").forEach(function(b){b.onclick=function(){var id=b.dataset.snooze,x=new Date();x.setDate(x.getDate()+1);x.setHours(9,0,0,0);fu[id]={at:x.toISOString()};delete notified[id];saveFu().then(render);toast("נדחה למחר ב-09:00");};});
+  document.querySelectorAll("[data-del]").forEach(function(b){b.onclick=function(){
+    if(!b.dataset.confirm){b.dataset.confirm="1";b.textContent="לחץ שוב לביטול";return;}
+    sb.from("tasks").delete().eq("id",b.dataset.del).then(function(r){if(r.error){toast("שגיאה: "+r.error.message);return;}delete fu[b.dataset.del];saveFu();loadTasks().then(render);toast("המשימה בוטלה");});};});
+}
+function doSend(){
+  var er=el("serr");er.innerHTML="";
+  var req=(el("req").value||"").trim(),due=el("due").value,urg=el("urg").checked,fuv=el("fu").value,p=null,pname="",oid=null;
+  if(mode!=="general"){p=findP(el("proj").value);if(!p){er.innerHTML='<div class="err">בחר הזמנה מהרשימה</div>';return;}oid=p.order_no;pname=(p.name||"")+" · "+p.order_no;}
+  else{var sj=(el("subj").value||"").trim();if(!sj&&!req){er.innerHTML='<div class="err">כתוב נושא או תיאור</div>';return;}pname=sj;}
+  if(mode==="update"&&!req)req="נא לעדכן מה הסטטוס בהזמנה ומה הצעד הבא.";
+  if(mode!=="update"&&!req){er.innerHTML='<div class="err">כתוב מה לבצע</div>';return;}
+  var pre=[];if(urg)pre.push("🔴 דחוף");if(due)pre.push("יעד "+due.split("-").reverse().join("."));
+  var text=(pre.length?pre.join(" · ")+"\n":"")+req;
+  el("send").textContent="שולח…";
+  sb.from("tasks").insert({order_no:oid,project_name:pname,request:text,status:"pending",kind:mode==="update"?"nadav_update":"nadav",created_by:me.id}).select().single().then(function(r){
+    el("send").textContent="שליחה לאנה";
+    if(r.error){er.innerHTML='<div class="err">השליחה נכשלה: '+esc(r.error.message)+'</div>';return;}
+    if(fuv&&r.data&&r.data.id!=null){fu[r.data.id]={at:new Date(fuv).toISOString()};saveFu();}
+    toast("נשלח לאנה");loadTasks().then(function(){view="list";listTab="open";render();});
+  });
+}
+if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
+boot();
+</script>
+</body>
+</html>
