@@ -125,7 +125,7 @@ function loadTasks(){return sb.from("tasks").select("*").in("kind",["nadav","nad
 function fuKey(){return "pj_followups_"+me.id;}
 function loadFu(){return sb.from("meta").select("value").eq("key",fuKey()).maybeSingle().then(function(r){fu=(r.data&&r.data.value)||{};}).catch(function(){fu={};});}
 function saveFu(){return sb.from("meta").upsert({key:fuKey(),value:fu}).then(function(r){if(r.error)toast("שמירת התזכורת נכשלה: "+r.error.message);});}
-function subscribe(){sb.channel("pj-live").on("postgres_changes",{event:"*",schema:"permito",table:"tasks"},function(){loadTasks().then(render);}).subscribe();}
+function subscribe(){sb.channel("pj-live").on("postgres_changes",{event:"*",schema:"permito",table:"tasks"},function(){loadTasks().then(bgRender);}).subscribe();}
 function findP(q){q=String(q||"").trim();if(!q)return null;var m=q.match(/^(\S+)\s·/);var key=m?m[1]:q;
   for(var i=0;i<projects.length;i++){var p=projects[i];if(p.order_no===key||(key.length>=6&&((p.pv_order&&String(p.pv_order).indexOf(key)>=0)||(p.increase_no&&String(p.increase_no).indexOf(key)>=0))))return p;}return null;}
 
@@ -138,7 +138,7 @@ function startTicker(){
     d.forEach(function(t){if(notified[t.id])return;notified[t.id]=1;
       if("Notification" in window&&Notification.permission==="granted"){try{var n=new Notification("פולואפ מול אנה",{body:(t.project_name?t.project_name+" — ":"")+String(t.request).slice(0,120),tag:"pj-"+t.id});n.onclick=function(){window.focus();};}catch(e){}}
     });
-    if(d.length)render();
+    if(d.length)bgRender();
   },60000);
 }
 function gcalLink(t,at){
@@ -150,14 +150,26 @@ function gcalLink(t,at){
 }
 
 /* ---------- UI ---------- */
+/* טיוטה: מה שהוקלד נשמר גם כשהמסך מתרענן (משימה חדשה, תזכורת, החלפת סוג) */
+var draft={},DRAFT_IDS=["proj","subj","req","due","fu","urg"],_pendingRender=false;
+try{draft=JSON.parse(localStorage.getItem("pj_draft")||"{}")||{};}catch(e){draft={};}
+function saveDraft(){DRAFT_IDS.forEach(function(k){var e=el(k);if(e)draft[k]=(e.type==="checkbox")?e.checked:e.value;});try{localStorage.setItem("pj_draft",JSON.stringify(draft));}catch(e){}}
+function restoreDraft(){DRAFT_IDS.forEach(function(k){var e=el(k);if(!e||!(k in draft))return;if(k==="fu"&&draft.fu&&new Date(draft.fu).getTime()<Date.now())return;if(e.type==="checkbox")e.checked=!!draft[k];else if(draft[k]!=null&&draft[k]!=="")e.value=draft[k];});var pj=el("proj");if(pj&&pj.value&&pj.oninput)pj.oninput();}
+function clearDraft(){draft={};try{localStorage.removeItem("pj_draft");}catch(e){}}
+/* רענון ברקע: לא מרנדר מחדש בזמן שמקלידים — מחכה עד שיוצאים מהשדה */
+function bgRender(){var a=document.activeElement,r=el("root");if(a&&r&&r.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){_pendingRender=true;return;}render();}
+document.addEventListener("focusout",function(){setTimeout(function(){if(!_pendingRender)return;var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;_pendingRender=false;render();},150);});
+document.addEventListener("input",function(e){if(e.target&&DRAFT_IDS.indexOf(e.target.id)>=0)saveDraft();});
+document.addEventListener("change",function(e){if(e.target&&DRAFT_IDS.indexOf(e.target.id)>=0)saveDraft();});
 function render(){
+  saveDraft();
   var due=dueList(),open=tasks.filter(function(t){return t.status!=="done";}),done=tasks.filter(function(t){return t.status==="done";});
   var h='<header><div><div class="brand">PERMITO <b>J</b></div><div class="sub">משימות ובקשות עדכון לאנה · '+esc(me.email)+'</div></div><span class="grow"></span>'+
     '<a class="btn sm ghost" href="'+PERMITO_URL+'" target="_blank" rel="noopener">פתח את Permito</a><button class="btn sm ghost" id="out">יציאה</button></header>';
   if(due.length)h+='<div class="alert">⏰ '+due.length+' '+(due.length===1?'פולואפ הגיע לזמנו':'פולואפים הגיעו לזמנם')+' — מסומנים למטה.</div>';
   h+='<div class="tabs"><button data-v="send" aria-current="'+(view==="send")+'">שליחה</button><button data-v="list" aria-current="'+(view==="list")+'">מעקב ('+open.length+' פתוחות)</button></div>';
   if(view==="send")h+=sendHTML();else h+=listHTML(open,done,due);
-  el("root").innerHTML=h;bind();
+  el("root").innerHTML=h;bind();restoreDraft();
 }
 function sendHTML(){
   var dl='<datalist id="plist">'+projects.filter(function(p){return p.state!=="cancelled";}).map(function(p){return '<option value="'+esc(p.order_no+" · "+(p.name||"")+(p.pv_order?" · PV "+p.pv_order:""))+'">';}).join("")+'</datalist>';
@@ -224,6 +236,7 @@ function doSend(){
     el("send").textContent="שליחה לאנה";
     if(r.error){er.innerHTML='<div class="err">השליחה נכשלה: '+esc(r.error.message)+'</div>';return;}
     if(fuv&&r.data&&r.data.id!=null){fu[r.data.id]={at:new Date(fuv).toISOString()};saveFu();}
+    clearDraft();DRAFT_IDS.forEach(function(k){var e=el(k);if(e){if(e.type==="checkbox")e.checked=false;else e.value=(k==="fu"?defaultFu():"");}});
     toast("נשלח לאנה");loadTasks().then(function(){view="list";listTab="open";render();});
   });
 }
